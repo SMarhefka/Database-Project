@@ -1,13 +1,24 @@
+use Weather;
 -- 1.	Determine the date range of the records in the Temperature table
 -- First Date	Last Date
 -- 1986-01-01	2017-05-09
 
+select min(Date_Last_Change) as [First Date], max(Date_Last_Change) as [Last Date] from Temperature
 
 -- 2.	Find the minimum, maximum and average temperature for each state
 -- State_Name	Minimum Temp	Maximum Temp	Average Temp
 -- Alabama	-4.662500		88.383333		59.328094
 -- Alaska		-43.875000		80.791667		29.146757
 -- Arizona	-99.000000		135.500000		67.039050
+
+select State_Name, min(Average_Temp) as [Minimum Temp], max(Average_Temp) [Maximum Temp], avg(Average_Temp) [Average Temp] 
+from
+(select State_Name, Average_Temp from 
+Temperature  t , AQS_Sites a
+where
+t.Site_Num  = a.Site_Number )p
+group by State_Name
+;
 
 -- 3.	The results from question #2 show issues with the database.  Obviously, a temperature of -99 degrees Fahrenheit in Arizona is not an accurate reading as most likely is 135.5 degrees.  Write the queries to find all suspect temperatures (below -39o and above 105o). Sort your output by State Name and Average Temperature.
 
@@ -16,6 +27,8 @@
 -- Washington	53		009		0013		-50.000000		2012-10-17
 -- Texas		48		141		0050		106.041667		1991-07-28
 -- Texas		48		141		0050		106.291667		1991-07-25
+
+
 
 --  
 -- 4.	You noticed that the average temperatures become questionable below -39 o and above 125 o and that it is unreasonable to have temperatures over 105 o for state codes 30, 29, 37, 26, 18, 38. You also decide that you are only interested in living in the United States, not Canada or the US territories. Create a view that combines the data in the AQS_Sites and Temperature tables. The view should have the appropriate SQL to exclude the data above. You should use this view for all subsequent queries.
@@ -27,6 +40,9 @@
 -- Louisiana	22.13			91.67			69.359993		2
 -- Texas		0.00			122.60			68.906944		3
 
+
+
+
 -- 6.	At this point, you’ve started to become annoyed at the amount of time each query is taking to run. You’ve heard that creating indexes can speed up queries. Create 5 indexes for your database. 2 of the indexes should index the temperature fields in the Temperature table, 1 index for the date in the Temperature table and 2 would index the columns used for joining the 2 tables (state, County and Site codes in the Temperate and aqs_site tables). 
 
 -- To see if the indexing help, add print statements that write the start and stop time for the query in question #2 and run the query before and after the indexes are created. Note the differences in the times. Also make sure that the create index steps include a check to see if the index exists before trying to create it.
@@ -36,6 +52,9 @@
 -- Begin Question 6 before Index Create At - 13:40:03
 -- (777 row(s) affected)
 -- Complete Question 6 before Index Create At - 13:45:18
+
+
+
 
 -- 7.	You’ve decided that you want to see the ranking of each high temperatures for each city in each state to see if that helps you decide where to live. Write a query that ranks (using the rank function) the states by averages temperature and then ranks the cities in each state. The ranking of the cities should restart at 1 when the query returns a new state. You also want to only show results for the 15 states with the highest average temperatures.
 
@@ -48,6 +67,38 @@
 -- 1		Florida		4			Saint Marks	   69.594272
 -- 2		Texas		1			McKinney	   76.662423
 -- 2		Texas		2			Mission	   74.701098
+
+
+With 
+state_rank  as
+    (SELECT
+        State_Name, Site_Number,
+        RANK () OVER ( 
+            ORDER BY Average_Temp DESC
+        ) state_rank
+    FROM
+        Temperature t , AQS_Sites a
+    where 
+    t.State_Code = a.State_Code), 
+city_rank as 
+    (SELECT City_Name, Site_Number,
+    RANK() OVER (ORDER BY
+    Average_Temp DESC
+    ) city_rank
+    from Temperature t, AQS_Sites a
+    where
+    t.Site_Num = a.Site_Number
+)
+
+select s.State_Name, state_rank, c.City_Name, city_rank from state_rank s, city_rank c, AQS_Sites a
+where 
+s.Site_Number = c.Site_Number
+and
+c.Site_Number = a.Site_Number
+
+
+
+
 
 -- 8.	You notice in the results that sites with Not in a City as the City Name are include but do not provide you useful information. Exclude these sites from all future answers. You can do this by either adding it to the where clause in the remaining queries or updating the view you created in #4
 
