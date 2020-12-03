@@ -103,6 +103,8 @@ c.Site_Number = a.Site_Number
 -- 8.	You notice in the results that sites with Not in a City as the City Name are include but do not provide you useful information. Exclude these sites from all future answers. You can do this by either adding it to the where clause in the remaining queries or updating the view you created in #4
 
 --  
+
+
 -- 9.	You’ve decided that the results in #8 provided too much information and you only want to 2 cities with the highest temperatures and group the results by state rank then city rank. 
 
 -- State_Rank	State_Name	State_City_Rank	City_Name		Average Temp
