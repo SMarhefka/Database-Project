@@ -32,7 +32,29 @@ group by State_Name
 
 --  
 -- 4.	You noticed that the average temperatures become questionable below -39 o and above 125 o and that it is unreasonable to have temperatures over 105 o for state codes 30, 29, 37, 26, 18, 38. You also decide that you are only interested in living in the United States, not Canada or the US territories. Create a view that combines the data in the AQS_Sites and Temperature tables. The view should have the appropriate SQL to exclude the data above. You should use this view for all subsequent queries.
+CREATE VIEW Refined_Temperature_Data AS 
+WITH
+Temperature_Data AS
+(
+	/* Cleaning up data from the temperature table */
+	SELECT * FROM Temperature
+	WHERE Average_Temp > -39 AND (( Average_Temp < 125 AND Temperature.State_Code  NOT IN (30, 29, 37, 26, 18, 38)) OR (Average_Temp < 105 AND Temperature.State_Code  IN (30, 29, 37, 26, 18, 38)))
+),
+AQS_data AS 
+(
+	/* decide that you are only interested in living in the United States, not Canada or the US territories */
+	SELECT * FROM AQS_Sites
+	WHERE State_Name NOT IN ('Canada','Country Of Mexico','District Of Columbia','Guam','Puerto Rico','Virgin Islands')
+)
 
+SELECT Temperature_Data.State_Code, Temperature_Data.Site_Num, Temperature_Data.County_Code,Date_Local, Average_Temp, Daily_High_Temp,
+Date_Last_Change, Temperature_Data.[1st Max Hour], Latitude, Longitude, Datum, Elevation, [Land Use], [Location Setting],
+[Site Established Date], [Site Closed Date], [Met Site State Code], [Met Site County Code], [Met Site Site Number], [Met Site Type],
+[Met Site Distance], [Met Site Direction], [GMT Offset], [Owning Agency], Local_Site_Name, Address, Zip_Code,
+State_Name, County_Name, City_Name, CBSA_Name, Tribe_Name, [Extraction Date]
+FROM Temperature_Data, AQS_data
+WHERE Temperature_Data.State_Code = AQS_data.State_Code AND Temperature_Data.Site_Num = AQS_data.Site_Number AND Temperature_Data.County_Code = AQS_data.County_Code
+                                                                                                                        
 -- 5.	Using the SQL RANK statement, rank the states by Average Temperature
 
 -- State_Name	Minimum Temp	Maximum Temp	Average Temp	State_rank
