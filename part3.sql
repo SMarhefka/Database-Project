@@ -64,9 +64,12 @@ State_Name, County_Name, City_Name, CBSA_Name, Tribe_Name, [Extraction Date]
 */
 /* The view includes the State_code, State_Name, County_Code, Site_Number */
 /* Also need to include Average Temp*/
-SELECT Temperature_Data.State_Code, State_Name, Temperature_Data.County_Code, Temperature_Data.Site_Num, Average_Temp
+/* Need to include City Name for Q7 */
+/* Need Date_Local for Q10 */
+SELECT Temperature_Data.State_Code, State_Name, Temperature_Data.County_Code, Temperature_Data.Site_Num, Average_Temp, City_Name, Date_Local
 FROM Temperature_Data, AQS_data
 WHERE Temperature_Data.State_Code = AQS_data.State_Code AND Temperature_Data.Site_Num = AQS_data.Site_Number AND  Temperature_Data.County_Code = AQS_data.County_Code
+
 
 -- 5.	Using the SQL RANK statement, rank the states by Average Temperature
 -- State_Name	Minimum Temp		Maximum Temp		Average Temp	State_rank
