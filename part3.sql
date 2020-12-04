@@ -30,9 +30,15 @@ group by State_Name
 
 
 
- 
+
+
 -- 4.	You noticed that the average temperatures become questionable below -39 o and above 125 o and that it is unreasonable to have temperatures over 105 o for state codes 30, 29, 37, 26, 18, 38. You also decide that you are only interested in living in the United States, not Canada or the US territories. Create a view that combines the data in the AQS_Sites and Temperature tables. The view should have the appropriate SQL to exclude the data above. You should use this view for all subsequent queries.
-CREATE VIEW Refined_Temperature_Data AS 
+IF EXISTS(select * FROM sys.views where name = 'Refined_Temperature_Data')
+BEGIN
+DROP VIEW Refined_Temperature_Data
+END
+GO
+CREATE VIEW Refined_Temperature_Data AS
 WITH
 Temperature_Data AS
 (
@@ -53,6 +59,10 @@ AQS_data AS
 	SELECT * FROM AQS_Sites
 	WHERE State_Name NOT IN ('Canada','Country Of Mexico','District Of Columbia','Guam','Puerto Rico','Virgin Islands')
 )
+SELECT Temperature_Data.State_Code, State_Name, Temperature_Data.County_Code, Temperature_Data.Site_Num, Average_Temp
+FROM Temperature_Data, AQS_data
+WHERE Temperature_Data.State_Code = AQS_data.State_Code AND Temperature_Data.Site_Num = AQS_data.Site_Number AND  Temperature_Data.County_Code = AQS_data.County_Code
+
 /* Test Statement Below returns 5,607,733 rows */
 /* Select * from Refined_Temperature_Data */
 /*
@@ -64,9 +74,11 @@ State_Name, County_Name, City_Name, CBSA_Name, Tribe_Name, [Extraction Date]
 */
 /* The view includes the State_code, State_Name, County_Code, Site_Number */
 /* Also need to include Average Temp*/
-SELECT Temperature_Data.State_Code, State_Name, Temperature_Data.County_Code, Temperature_Data.Site_Num, Average_Temp
-FROM Temperature_Data, AQS_data
-WHERE Temperature_Data.State_Code = AQS_data.State_Code AND Temperature_Data.Site_Num = AQS_data.Site_Number AND  Temperature_Data.County_Code = AQS_data.County_Code
+GO
+BEGIN
+Select * from Refined_Temperature_Data
+END
+
 
 -- 5.	Using the SQL RANK statement, rank the states by Average Temperature
 -- State_Name	Minimum Temp		Maximum Temp		Average Temp	State_rank
@@ -103,7 +115,7 @@ ORDER BY State_rank
 -- 2		Texas		1			McKinney	   76.662423
 -- 2		Texas		2			Mission	   74.701098
 
-
+go
 With 
 state_rank  as
     (SELECT
@@ -124,12 +136,12 @@ city_rank as
     where
     t.Site_Num = a.Site_Number
 )
-
 select s.State_Name, state_rank, c.City_Name, city_rank from state_rank s, city_rank c, AQS_Sites a
 where 
 s.Site_Number = c.Site_Number
 and
 c.Site_Number = a.Site_Number
+
 
 
 
